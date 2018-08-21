@@ -71,7 +71,8 @@ class KNearestNeighbor(object):
         # training point, and store the result in dists[i, j]. You should   #
         # not use a loop over dimension.                                    #
         #####################################################################
-        pass
+        distances = np.sum((self.X_train - X[i,:])**2, axis = 1) #subtract this test_image from all train_images, and find the ditance
+        dists[i,:] = distances
         #####################################################################
         #                       END OF YOUR CODE                            #
         #####################################################################
@@ -121,7 +122,21 @@ class KNearestNeighbor(object):
     # HINT: Try to formulate the l2 distance using matrix multiplication    #
     #       and two broadcast sums.                                         #
     #########################################################################
-    pass
+    #ones = np.ones(5000)
+   # A = np.tensordot(X, ones, 0)
+   # B = np.tensordot(X_train, ones, 0)
+   # C = A - B
+  #  dists = np.sum(np.abs(C), axis = 2)
+            
+     
+    #From online person's account
+    
+    T = np.sum(X**2, axis = 1)
+    F = np.sum(self.X_train**2, axis = 1).T
+    F = np.tile(F, (500,5000))
+    FT = X.dot(self.X_train.T)
+    print(T.shape, F.shape, FT.shape, X.shape, self.X_train.shape)
+    dists = T+F - 2*FT
     #########################################################################
     #                         END OF YOUR CODE                              #
     #########################################################################
@@ -153,7 +168,14 @@ class KNearestNeighbor(object):
       # neighbors. Store these labels in closest_y.                           #
       # Hint: Look up the function numpy.argsort.                             #
       #########################################################################
-      pass
+      indxs = np.argsort(dists[i])#list of indices, where the values of dists[] are sorted. [23,2,17] would mean dist[23] has the lowest value, dist[2] has the next lowest val
+      closest_y = np.zeros(k)
+      indxs = np.argsort(dists[i])[:k] #k smallest
+      closest_y  = np.array([self.y_train[indx] for indx in indxs]) #self.y_train[index of image] #this is sorted from closest to k furthest
+      #for j in range(k):
+      #  nn = indxs[k]
+      #   label = self.y_train[nn]
+      #   closest_y[j] = label
       #########################################################################
       # TODO:                                                                 #
       # Now that you have found the labels of the k nearest neighbors, you    #
@@ -161,7 +183,9 @@ class KNearestNeighbor(object):
       # Store this label in y_pred[i]. Break ties by choosing the smaller     #
       # label.                                                                #
       #########################################################################
-      pass
+      counts = np.bincount(closest_y.astype(np.int64)) #[how many 0s, how many 1s, how many 2s ...]
+      closest_common_denominator = np.argmax(counts) #[e.g. the most things at index 5]
+      y_pred[i] = closest_common_denominator
       #########################################################################
       #                           END OF YOUR CODE                            # 
       #########################################################################
